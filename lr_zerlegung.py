@@ -3,20 +3,22 @@ import matplotlib as plt
 
 def lr_ohne(A):
     n = len(A)
-    L = np.zeros((n, n))
-    for p in range(n): L[p][p] = 1
+    L = np.identity(n)
     R = A.copy()
 
     for i in range(n):
         pivot = R[i][i]
+        if (pivot == 0):
+            print("Pivot gleich 0: LR-Zerlegung ohne Pivotisierung nicht durchführbar")
+            return None, None
         for i_cont in range(i+1, len(R)):
             num = R[i_cont][i]
-            if (pivot == 0): continue
-            else:
-                l_i = -(num / pivot)
-                L[i_cont][i] = -l_i
-                for j_cont in range(i, len(R)):
-                    R[i_cont][j_cont] = R[i][j_cont]*l_i+R[i_cont][j_cont]
+            if (num == 0): continue
+
+            l_i = -(num / pivot)
+            L[i_cont][i] = -l_i
+            for j_cont in range(i, len(R)):
+                R[i_cont][j_cont] = R[i][j_cont]*l_i+R[i_cont][j_cont]
     return L, R
 
 def lr_mit(A):
@@ -25,25 +27,25 @@ def lr_mit(A):
     L = np.identity(n)
     R = A.copy()
 
-    for i in range(n):
+    for i in range(n-1):
 
         absR_row_i = np.abs(R[:,i])
         sliced_absR_row_i = absR_row_i[i:]
         index_maxabsR_row_i = np.argmax(sliced_absR_row_i)
         if index_maxabsR_row_i != 0:
-            P[:, [0, index_maxabsR_row_i]] = P[:, [index_maxabsR_row_i, 0]]
-            R[[0, index_maxabsR_row_i]] = R[[index_maxabsR_row_i, 0]]
+            P[:, [i, index_maxabsR_row_i+i]] = P[:, [index_maxabsR_row_i+i, i]]
+            R[[i, index_maxabsR_row_i+i]] = R[[index_maxabsR_row_i+i, i]]
 
         pivot = R[i][i]
         for i_cont in range(i + 1, len(R)):
+
             num = R[i_cont][i]
-            if (pivot == 0):
-                continue
-            else:
-                l_i = -(num / pivot)
-                L[i_cont][i] = -l_i
-                for j_cont in range(i, len(R)):
-                    R[i_cont][j_cont] += R[i][j_cont] * l_i
+            if (num == 0): continue
+
+            l_i = -(num / pivot)
+            L[i_cont][i] = -l_i
+            for j_cont in range(i, len(R)):
+                R[i_cont][j_cont] += R[i][j_cont] * l_i
     return L, R, P
 
 def linsolve_ohne(A, b):
@@ -67,11 +69,11 @@ def linsolve_ohne(A, b):
 
     return x
 
-def linsolve_mit(A, b):
+def linsolve_mit(A, b): #L,R,P als Input?
     n = len(A)
     L, R, P = lr_mit(A)
     x,  x_s = np.zeros(n), np.zeros(n)
-    Pb = np.dot(P, b)
+    Pb = np.dot(b, P)
 
     #Vorwärtseinsetzen
     x_s[0] = Pb[0]
@@ -90,25 +92,62 @@ def linsolve_mit(A, b):
     return x
 
 #a)
+print("a)")
 A = np.array([[1., 1., 3.],
               [1., 2., 2.],
               [2., 1., 5.]])
 
 b = np.array([2., 1., 1.])
 
+print("LR OHNE SPALTENPIV:")
+L, R= lr_ohne(A)
+print("L=\n", L)
+print("R=\n", R)
+x = linsolve_ohne(A, b)
+print("x=\n",x)
+
+print("")
+
+print("LR MIT SPALTENPIV:")
 L, R, P = lr_mit(A)
-print(L)
-print(R)
-print(P)
-print(linsolve_mit(A, b))
+print("L=\n",L)
+print("R=\n",R)
+print("P=\n",P)
+x = linsolve_mit(A, b)
+print("x=\n",x)
+
+print("")
+print("")
+
 
 #b)
+print("b)")
 A = np.array([[0., 1., 0., -1.],
-              [1., 2., 2., 1. ],
-              [1., 1., 1., 1. ],
+              [1., 2., 2., 1.],
+              [1., 1., 1., 1.],
               [2., 1., -1., 2.]])
 
 b = np.array([2., -1., -2., -11.])
+
+print("LR OHNE SPALTENPIV:")
+L, R= lr_ohne(A)
+if L != None or R != None:
+    print("L=\n",L)
+    print("R=\n",R)
+    x = linsolve_ohne(A, b)
+    print("x=\n",x)
+
+print("")
+
+print("LR MIT SPALTENPIV:")
+L, R, P = lr_mit(A)
+print("L=\n",L)
+print("R=\n",R)
+print("P=\n",P)
+x = linsolve_mit(A, b)
+print("x=\n",x)
+print("LR=\n", np.dot(L, R))
+print("PA=\n", np.dot(P, A))
 
 #c)
 
