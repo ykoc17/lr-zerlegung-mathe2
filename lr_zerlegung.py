@@ -69,7 +69,7 @@ def linsolve_ohne(A, b):
 
     return x
 
-def linsolve_mit(A, b): #L,R,P als Input?
+def linsolve_mit(A, b):
     n = len(A)
     L, R, P = lr_mit(A)
     x,  x_s = np.zeros(n), np.zeros(n)
@@ -150,6 +150,34 @@ print("LR=\n", np.dot(L, R))
 print("PA=\n", np.dot(P, A))
 
 #c)
+def fill_array_from_c(n):
+    eps = np.random.normal(loc=0, scale=1)
+    A = np.zeros((n,n))
+    for i in range(1, n):
+        for j in range(1, n):
+            A[i-1][n-j] = np.power(3, -np.abs(i-j))+np.power(2, -j-i)+(np.power(10, -10)*eps)
+    return A
 
+A_2 = fill_array_from_c(2)
+A_3 = fill_array_from_c(3)
+A_4 = fill_array_from_c(4)
+A_5 = fill_array_from_c(5)
+A_6 = fill_array_from_c(6)
 
 #d)
+def fill_hilbert_matrix(n):
+    H = np.zeros((n, n))
+    for i in range(1, n):
+        for j in range(1, n):
+            H[i-1][j-1] = 1/(i+j-1)
+    return H
+
+H_3 = fill_hilbert_matrix(3)
+x = np.ones(3)
+b = np.dot(H_3, x)
+
+x_ohne = linsolve_ohne(H_3, b)
+x_mit = linsolve_mit(H_3, b)
+x_stdbib = np.linalg.solve(H_3, b)
+
+#Relativer Fehler
