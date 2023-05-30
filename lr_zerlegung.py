@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def lr_ohne(A):
     n = len(A)
@@ -12,13 +12,14 @@ def lr_ohne(A):
             print("Pivot gleich 0: LR-Zerlegung ohne Pivotisierung nicht durchführbar")
             return None, None
         for i_cont in range(i+1, len(R)):
+
             num = R[i_cont][i]
             if (num == 0): continue
 
             l_i = -(num / pivot)
             L[i_cont][i] = -l_i
             for j_cont in range(i, len(R)):
-                R[i_cont][j_cont] = R[i][j_cont]*l_i+R[i_cont][j_cont]
+                R[i_cont][j_cont] += R[i][j_cont] * l_i
     return L, R
 
 def lr_mit(A):
@@ -37,7 +38,7 @@ def lr_mit(A):
             R[[i, index_maxabsR_row_i+i]] = R[[index_maxabsR_row_i+i, i]]
 
         pivot = R[i][i]
-        for i_cont in range(i + 1, len(R)):
+        for i_cont in range(i+1, len(R)):
 
             num = R[i_cont][i]
             if (num == 0): continue
@@ -117,6 +118,12 @@ x = linsolve_mit(A, b)
 print("x=\n",x)
 
 print("")
+
+print("LR MIT STANDARDLIB:")
+x_stdlib = np.linalg.solve(A, b)
+print("x_stdlib=\n",x_stdlib)
+
+print("")
 print("")
 
 
@@ -149,6 +156,13 @@ print("x=\n",x)
 
 print("")
 
+print("LR MIT STANDARDLIB:")
+x_stdlib = np.linalg.solve(A, b)
+print("x_stdlib=\n",x_stdlib)
+
+print("")
+print("")
+
 #c)
 print("c)")
 
@@ -178,9 +192,39 @@ print("x_mit=\n",x_mit)
 print("x_stdlib=\n",x_stdlib)
 
 print("")
+print("")
 
 #d)
 print("d)")
+
+#Relativer Fehler
+n_max = 10
+
+rel_fehler_array_ohne_c = np.zeros(n_max-1)
+rel_fehler_array_mit_c = np.zeros(n_max-1)
+rel_fehler_array_stdlib_c = np.zeros(n_max-1)
+for i in range(n_max-1):
+    A_n = fill_array_from_c(i+2)
+    x = np.ones(i+2)
+    b = np.dot(A_n, x)
+
+    x_ohne = linsolve_ohne(A_n, b)
+    x_mit = linsolve_mit(A_n, b)
+    x_stdlib = np.linalg.solve(A_n, b)
+
+    rel_fehler_array_ohne_c[i] = np.float_power(np.linalg.norm(x_ohne - x), 2)/np.float_power(np.linalg.norm(x), 2)
+    rel_fehler_array_mit_c[i] = np.float_power(np.linalg.norm(x_mit - x), 2) / np.float_power(np.linalg.norm(x), 2)
+    rel_fehler_array_stdlib_c[i] = np.float_power(np.linalg.norm(x_stdlib - x), 2) / np.float_power(np.linalg.norm(x), 2)
+
+fig, (axa, axb, axc) = plt.subplots(3,1, figsize=(8, 12))
+fig.suptitle("Relativer Fehler Aufgabe c)", fontsize=16, fontweight="bold")
+n_werte = np.arange(2, n_max+1)
+axa.plot(n_werte, rel_fehler_array_ohne_c, ".", color="C3")
+axa.set_ylabel("ohne Spaltenpivotisierung")
+axb.plot(n_werte, rel_fehler_array_mit_c, ".",color="C3")
+axb.set_ylabel("mit Splaltenpivotisierung")
+axc.plot(n_werte, rel_fehler_array_stdlib_c,".", color="C3")
+axc.set_ylabel("Standardbibliothek")
 
 def fill_hilbert_matrix(n):
     H = np.zeros((n, n))
@@ -189,7 +233,7 @@ def fill_hilbert_matrix(n):
             H[i-1][j-1] = 1/(i+j-1)
     return H
 
-n = 3
+n = 6
 
 H_n = fill_hilbert_matrix(n)
 x = np.ones(n)
@@ -206,3 +250,32 @@ print("x_mit=\n",x_mit)
 print("x_stdlib=\n",x_stdlib)
 
 #Relativer Fehler
+n_max = 50
+
+rel_fehler_array_ohne_hilbert = np.zeros(n_max-1)
+rel_fehler_array_mit_hilbert = np.zeros(n_max-1)
+rel_fehler_array_stdlib_hilbert = np.zeros(n_max-1)
+for i in range(n_max-1):
+    H_n = fill_hilbert_matrix(i + 2)
+    x = np.ones(i + 2)
+    b = np.dot(H_n, x)
+
+    x_ohne = linsolve_ohne(H_n, b)
+    x_mit = linsolve_mit(H_n, b)
+    x_stdlib = np.linalg.solve(H_n, b)
+
+    rel_fehler_array_ohne_hilbert[i] = np.float_power(np.linalg.norm(x_ohne - x), 2) / np.float_power(np.linalg.norm(x), 2)
+    rel_fehler_array_mit_hilbert[i] = np.float_power(np.linalg.norm(x_mit - x), 2) / np.float_power(np.linalg.norm(x), 2)
+    rel_fehler_array_stdlib_hilbert[i] = np.float_power(np.linalg.norm(x_stdlib - x), 2) / np.float_power(np.linalg.norm(x), 2)
+
+fig2, (axa2, axb2, axc2) = plt.subplots(3,1, figsize=(8, 12))
+fig2.suptitle("Relativer Fehler Aufgabe d) (Hilbert-Matrix)", fontsize=16, fontweight="bold")
+n_werte = np.arange(2, n_max+1)
+axa2.plot(n_werte, rel_fehler_array_ohne_hilbert, ".", color="C3")
+axa2.set_ylabel("ohne Spaltenpivotisierung")
+axb2.plot(n_werte, rel_fehler_array_mit_hilbert, ".",color="C3")
+axb2.set_ylabel("mit Splaltenpivotisierung")
+axc2.plot(n_werte, rel_fehler_array_stdlib_hilbert,".", color="C3")
+axc2.set_ylabel("Standardbibliothek")
+
+plt.show()
