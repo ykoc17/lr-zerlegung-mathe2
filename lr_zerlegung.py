@@ -36,6 +36,9 @@ def lr_mit(A):
         if index_maxabsR_row_i != 0:
             P[:, [i, index_maxabsR_row_i+i]] = P[:, [index_maxabsR_row_i+i, i]]
             R[[i, index_maxabsR_row_i+i]] = R[[index_maxabsR_row_i+i, i]]
+            for v in range(i):
+                if i < n-1:
+                    L[index_maxabsR_row_i+i][v], L[i][v] = L[i][v], L[index_maxabsR_row_i+i][v]
 
         pivot = R[i][i]
         for i_cont in range(i+1, len(R)):
@@ -194,9 +197,6 @@ print("x_stdlib=\n",x_stdlib)
 print("")
 print("")
 
-#d)
-print("d)")
-
 #Relativer Fehler
 n_max = 10
 
@@ -225,6 +225,9 @@ axb.plot(n_werte, rel_fehler_array_mit_c, ".",color="C3")
 axb.set_ylabel("mit Splaltenpivotisierung")
 axc.plot(n_werte, rel_fehler_array_stdlib_c,".", color="C3")
 axc.set_ylabel("Standardbibliothek")
+
+#d)
+print("d)")
 
 def fill_hilbert_matrix(n):
     H = np.zeros((n, n))
